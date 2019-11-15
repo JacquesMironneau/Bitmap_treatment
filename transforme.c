@@ -82,21 +82,21 @@ int chargeImageEnMemoire ( char *nomDeFichierBMP, char **ptEnTete, char **ptImag
 **************************************************************************************************************/
 Pixel_T getPixel(int  ligne, int colonne, char * ptImageBitMap,EnTeteBMP enTete )
 {
-        int nbBourrage;
-        Pixel_T pix;
-        /*  a compleer */
-	int row = enTete.largeurImage - ligne;
-	int col = enTete.hauteurImage - colonne;
-	int offset = row * 8 * col;
+    int nbBourrage;
+    Pixel_T pix;
+    /*  a compleer */
+    int row = enTete.largeurImage - ligne;
+    int col = enTete.hauteurImage - colonne;
+    int offset = row * 8 * col;
 
-	//handle offset to get the 3 differents values
-	printf("%d", *(ptImageBitMap + offset));
-	printf("%d", *(ptImageBitMap + offset + 8));
-	printf("%d", *(ptImageBitMap + offset + 16));
+    //handle offset to get the 3 differents values
+    printf("%d", *(ptImageBitMap + offset));
+    printf("%d", *(ptImageBitMap + offset + 8));
+    printf("%d", *(ptImageBitMap + offset + 16));
 
 
 
-        return pix;
+    return pix;
 
 }
 
@@ -116,8 +116,11 @@ Pixel_T getPixel(int  ligne, int colonne, char * ptImageBitMap,EnTeteBMP enTete 
 **************************************************************************************************************/
 void setPixel(int ligne, int colonne, Pixel_T intensitesPix, char *ptImageBitMap, EnTeteBMP enTete)
 {
-      int nbBourrage;
-      /* a completer */
+      int nbBourrage = enTete.largeurImage % 4;
+      register int offSetIndex =ligne*(enTete.largeurImage + nbBourrage) + colonne;
+      *(ptImageBitMap + offSetIndex ) = intensitesPix.bleu;
+      *(ptImageBitMap + offSetIndex+1 ) = intensitesPix.vert;
+      *(ptImageBitMap + offSetIndex+2 ) = intensitesPix.rouge;
 
 }
 /*!*****************************************************************************************************************

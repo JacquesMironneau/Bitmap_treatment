@@ -12,6 +12,7 @@
  #include <stdlib.h>
  #include <stdio.h>
  #include "enTeteBMP.h"
+#include "transforme.h"
 /***********************************************/
 /************ definition des constantes ********/
 /***********************************************/
@@ -39,14 +40,23 @@ int main(void)
     char  *ptTete, *ptImage;
     puts("sauvez moi");
     EnTeteBMP teteBmp;
-    chargeImageEnMemoire ("velo_de_cours.bmp", &ptTete, &ptImage, &teteBmp);
+    /*
+    chargeImageEnMemoire ("avion.bmp", &ptTete, &ptImage, &teteBmp);
     puts("sauvez le");
     sauveImageSurDisque(ptTete,ptImage,NOM_FICHIER_COPIE,teteBmp);
+*/
+    chargeImageEnMemoire ("avion.bmp", &ptTete, &ptImage, &teteBmp);
+    
 
 
+    Pixel_T green = {'0','127','0'};
+    int index;
+    int index2;
+    for(index =10; index < 300; index++)
+        for(index2 =10;index2<300;index2++)
+            setPixel(index,index2,green,ptImage,teteBmp);
+    sauveImageSurDisque(ptTete,ptImage,NOM_FICHIER_COPIE,teteBmp);
     /*
-    rajoutez ici le test de test de setPixel (8 instructions)
-    sauveImageSurDisque(completer,completer,NOM_FICHIER_TEST_SET_PIXEL,completer );
     rajoutez ici le test de getPixel.
     rectangleRouge(completer, NOM_FICHIER_ENTREE,NOM_FICHIER_CARRE_ROUGE);
     rotation90Horaire(NOM_FICHIER_ENTREE, NOM_FICHIER_ROT90);
