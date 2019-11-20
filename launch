@@ -3,5 +3,8 @@
 make
 transforme
 #rm -f ./transforme
-shotwell avionCopie.bmp
+shotwell avionCopie.bmp 
+shotwell rouge.bmp
+shotwell bleu.bmp
+
 

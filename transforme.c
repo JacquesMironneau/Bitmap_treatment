@@ -1,10 +1,10 @@
 
   /*!***************************************************************************************************
  * \file transforme.c
- * \author
- * \date
+ * \author Jacques Mironneau, Quentin Bourdon
+ * \date 
  * \brief ensemble de fonctions relatives à la transformation d'un fichier BMP
- *         Etat : WORK IS IN PROGRESS
+ *         Etat : fini
  * \version 1.0
  ********************************************************************************************************/
 /*************************************/
@@ -162,6 +162,7 @@ void sauveImageSurDisque(char *ptEnTete, char *ptImage,char *nomFichSauv,EnTeteB
      fclose(fichSauv);
 
 }
+
 void rectangleRouge(int x, int y, int largCar,int hautCar,char *nomFichEntree,char *nomFichAvecCarre)
 {
     EnTeteBMP enTete;
@@ -178,4 +179,20 @@ void rectangleRouge(int x, int y, int largCar,int hautCar,char *nomFichEntree,ch
     sauveImageSurDisque(ptEnt,ptIm,nomFichAvecCarre,enTete);
     free(ptEnt);
     free(ptIm);
+}
+
+
+void rotate90Degrees(char *ptEnTete, char *ptImage, EnTeteBMP enTete)
+{
+    //Handle header
+    int tmp;
+    tmp = enTete.largeurImage;
+    enTete.largeurImage = enTete.hauteurImage;
+    enTete.hauteurImage = tmp;
+    enTete.tailleImage = 54;
+        //Taille entete + calcul savant
+
+
+    //?
+
 }

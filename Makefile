@@ -1,11 +1,10 @@
 $FLAGS= -W -Wextra -Wall -ansi -pedantic
-$EXEC=afficheEnTeteBMP
+$EXEC=afficheEnTeteBMP  transforme
 $CC= gcc
 $ADD= -I/home/pashmiii/Documents/IUT/S3/U2-S3-/C/BITMAP/enTeteBMP 
 
-
-transforme:  transforme.c mainTransforme.c  enTeteBMP.c
-	$(CC) -o $@ $^ $(FLAGS) $(ADD)
+transforme: transforme.c mainTransforme.c enTeteBMP.c
+	$(CC) -o $@ $^ $(FLAGS)  $(ADD)
 	
 %.o: %.c enTeteBMP.h
 	$(CC) -o $@ -c $^ $(FLAGS)  $(ADD)
