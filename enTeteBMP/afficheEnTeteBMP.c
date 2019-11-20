@@ -31,7 +31,7 @@ void extern afficheEnTeteBMP (EnTeteBMP enTete);
 int main(void)
 {
   EnTeteBMP enTeteFich;
-  litEnteteBMP (NOM_FICHIER, &enTeteFich);
+  litEnteteBMP ("../casimir.bmp", &enTeteFich);
   afficheEnTeteBMP(enTeteFich);
 }
 

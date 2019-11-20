@@ -16,7 +16,9 @@
 /***********************************************/
 /************ definition des constantes ********/
 /***********************************************/
- #define NOM_FICHIER_ENTREE "avion.bmp"
+ #define FICHIER1 "avion.bmp"
+ #define FICHIER2 "casimir.bmp"
+ #define FICHIER3 "velo_de_cours.bmp"
  #define NOM_FICHIER_COPIE "avionCopie.bmp"
  #define NOM_FICHIER_TEST_SET_PIXEL "avionTestSetPixel.bmp"
  #define NOM_FICHIER_BLEU "avionBleu.bmp"
@@ -45,16 +47,24 @@ int main(void)
     puts("sauvez le");
     sauveImageSurDisque(ptTete,ptImage,NOM_FICHIER_COPIE,teteBmp);
 */
-    chargeImageEnMemoire ("avion.bmp", &ptTete, &ptImage, &teteBmp);
+    chargeImageEnMemoire (FICHIER3, &ptTete, &ptImage, &teteBmp);
     
 
+    /*Set green a 30*30 square*/
+   Pixel_T green = {0,127,0};
+    int row;
+    int col;
+    for(row = 0; row < 30; row++)
+        for(col =0;col < 30; col++)
+            setPixel(row,col,green,ptImage,teteBmp); 
 
-    Pixel_T green = {'0','127','0'};
-    int index;
-    int index2;
-    for(index =10; index < 300; index++)
-        for(index2 =10;index2<300;index2++)
-            setPixel(index,index2,green,ptImage,teteBmp);
+    Pixel_T p = getPixel(0,0, ptImage,teteBmp);
+    printf("Le pixel est : %d %d %d", p.bleu, p.vert, p.rouge);
+
+    bleuitImageBMP(FICHIER1, "bleu.bmp");
+
+    rectangleRouge(10,10, 100, 100, "avion.bmp", "rouge.bmp");
+
     sauveImageSurDisque(ptTete,ptImage,NOM_FICHIER_COPIE,teteBmp);
     /*
     rajoutez ici le test de getPixel.

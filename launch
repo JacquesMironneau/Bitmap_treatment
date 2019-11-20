@@ -1,0 +1,7 @@
+#!/bin/bash
+
+make
+transforme
+#rm -f ./transforme
+shotwell avionCopie.bmp
+

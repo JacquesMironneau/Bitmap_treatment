@@ -27,14 +27,32 @@
 **************************************************************************************************************/
 int bleuitImageBMP (char nomFichEntree[], char nomFichTransf[])
 {
-    /*
-      FILE *fichBleu;
-	  char *ptEnt, *ptIm;
-      EnTeteBMP enTete;
 
-      free(ptEnt);
-      free(ptIm);
-*/
+
+    FILE *fichBleu;
+    char *ptEnt, *ptIm;
+    EnTeteBMP enTete;
+
+    Pixel_T pix;
+    int row, col; 
+    chargeImageEnMemoire(nomFichEntree, &ptEnt, &ptIm, &enTete);
+
+    for( row = 0; row < enTete.hauteurImage; ++row)
+    {
+        for (col = 0; col < enTete.largeurImage; ++col)
+        {
+            pix = getPixel(row, col, ptIm, enTete);
+            pix.vert = 0;
+            pix.rouge = 0;
+            setPixel(row, col, pix,ptIm, enTete);
+        }
+    }
+
+    sauveImageSurDisque(ptEnt,ptIm,nomFichTransf,enTete);
+
+    free(ptEnt);
+    free(ptIm);
+
 }
 
 
@@ -58,10 +76,10 @@ int chargeImageEnMemoire ( char *nomDeFichierBMP, char **ptEnTete, char **ptImag
 
      f=fopen(nomDeFichierBMP,"rb");  
 
-     *ptEnTete = malloc(enTeteBMP->tailleEntete);
+     *ptEnTete = malloc(enTeteBMP->tailleEntete+14);
      *ptImage = malloc(enTeteBMP->tailleImage);
     
-     fread(*ptEnTete,enTeteBMP->tailleEntete, 1, f); 
+     fread(*ptEnTete,enTeteBMP->tailleEntete+14, 1, f); 
      fread(*ptImage,enTeteBMP->tailleImage, 1, f); 
 
      return OK;
@@ -82,17 +100,15 @@ int chargeImageEnMemoire ( char *nomDeFichierBMP, char **ptEnTete, char **ptImag
 **************************************************************************************************************/
 Pixel_T getPixel(int  ligne, int colonne, char * ptImageBitMap,EnTeteBMP enTete )
 {
-    int nbBourrage;
     Pixel_T pix;
-    /*  a compleer */
-    int row = enTete.largeurImage - ligne;
-    int col = enTete.hauteurImage - colonne;
-    int offset = row * 8 * col;
+    int padding = enTete.largeurImage % 4;
+    int offset = ligne * (enTete.largeurImage * 3 + padding) + colonne * 3;
 
-    //handle offset to get the 3 differents values
-    printf("%d", *(ptImageBitMap + offset));
-    printf("%d", *(ptImageBitMap + offset + 8));
-    printf("%d", *(ptImageBitMap + offset + 16));
+
+   //handle offset to get the 3 differents values
+    pix.bleu = *(ptImageBitMap + offset);
+    pix.vert = *(ptImageBitMap + offset + 1);
+    pix.rouge = *(ptImageBitMap + offset + 2);
 
 
 
@@ -116,11 +132,12 @@ Pixel_T getPixel(int  ligne, int colonne, char * ptImageBitMap,EnTeteBMP enTete 
 **************************************************************************************************************/
 void setPixel(int ligne, int colonne, Pixel_T intensitesPix, char *ptImageBitMap, EnTeteBMP enTete)
 {
-      int nbBourrage = enTete.largeurImage % 4;
-      register int offSetIndex =ligne*(enTete.largeurImage + nbBourrage) + colonne;
-      *(ptImageBitMap + offSetIndex ) = intensitesPix.bleu;
-      *(ptImageBitMap + offSetIndex+1 ) = intensitesPix.vert;
-      *(ptImageBitMap + offSetIndex+2 ) = intensitesPix.rouge;
+    int padding = enTete.largeurImage % 4;
+    int offset = ligne *( enTete.largeurImage *3 + padding ) + colonne *3;
+
+    *(ptImageBitMap + offset ) = intensitesPix.bleu;
+    *(ptImageBitMap + offset+1 ) = intensitesPix.vert;
+    *(ptImageBitMap + offset+2 ) = intensitesPix.rouge;
 
 }
 /*!*****************************************************************************************************************
@@ -140,18 +157,25 @@ void sauveImageSurDisque(char *ptEnTete, char *ptImage,char *nomFichSauv,EnTeteB
      if((fichSauv = fopen(nomFichSauv,"wb"))== NULL)
              return;
 
-     fwrite(ptEnTete, enTete.tailleEntete,1,fichSauv);
+     fwrite(ptEnTete, enTete.tailleEntete+14,1,fichSauv);
      fwrite(ptImage, enTete.tailleImage,1,fichSauv);
      fclose(fichSauv);
 
 }
 void rectangleRouge(int x, int y, int largCar,int hautCar,char *nomFichEntree,char *nomFichAvecCarre)
 {
-    /*
-      EnTeteBMP enTete;
-      int lig,col;
-      char *ptEnt, *ptIm,*pt;
-      free(ptEnt);
-      free(ptIm);
-      */
+    EnTeteBMP enTete;
+    int lig,col;
+    char *ptEnt, *ptIm,*pt;
+    Pixel_T pix = {0, 0, 127};
+
+    chargeImageEnMemoire(nomFichEntree, &ptEnt, &ptIm, &enTete);
+
+    for (col = y; col < hautCar; ++col)
+        for (lig = x; lig < largCar; ++lig)
+            setPixel(lig, col, pix,ptIm, enTete);
+
+    sauveImageSurDisque(ptEnt,ptIm,nomFichAvecCarre,enTete);
+    free(ptEnt);
+    free(ptIm);
 }
