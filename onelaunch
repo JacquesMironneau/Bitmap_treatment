@@ -3,10 +3,7 @@
 make
 transforme
 #rm -f ./transforme
-for f in *.bmp
-do   
-    shotwell $f
-done
-
+shotwell 902.bmp
+shotwell avion90.bmp
 
 

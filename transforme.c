@@ -1,5 +1,4 @@
-
-  /*!***************************************************************************************************
+/*!***************************************************************************************************
  * \file transforme.c
  * \author Jacques Mironneau, Quentin Bourdon
  * \date 
@@ -10,25 +9,28 @@
 /*************************************/
 /****  fichiers inclus **************/
 /*************************************/
- #include <stdlib.h>
- #include <stdio.h>
- #include "enTeteBMP.h"
- #include "transforme.h"
- 
+#include <stdlib.h>
+#include <stdio.h>
+#include "enTeteBMP.h"
+#include "transforme.h"
 
+union 
+{
+    unsigned int integer;
+    unsigned char byte[4];
+
+} convertissor;
 
 /*!******************************************************************************************************
-*  \fn   bleuitImageBMP (char nomFichEntree[], char nomFichTransf[])
-*  \brief   Fonction permettant de transformer un fichier BMP en entree
-*    en un fichier BMP où on n'a gardé que les intensités de bleu pour chaque pixel.
-*    Les intensites de rouge et de vert sont mises à zéro
-*  \param [in] nomFichEntree   chaine de caractères ontenant le nom du fichier à modifier.
-*  \param [in ] nomFichTransf  chaine de caractères contenant le nom du fichier qui contiendra l'image bleuie
-**************************************************************************************************************/
+ *  \fn   bleuitImageBMP (char nomFichEntree[], char nomFichTransf[])
+ *  \brief   Fonction permettant de transformer un fichier BMP en entree
+ *    en un fichier BMP où on n'a gardé que les intensités de bleu pour chaque pixel.
+ *    Les intensites de rouge et de vert sont mises à zéro
+ *  \param [in] nomFichEntree   chaine de caractères ontenant le nom du fichier à modifier.
+ *  \param [in ] nomFichTransf  chaine de caractères contenant le nom du fichier qui contiendra l'image bleuie
+ **************************************************************************************************************/
 int bleuitImageBMP (char nomFichEntree[], char nomFichTransf[])
 {
-
-
     FILE *fichBleu;
     char *ptEnt, *ptIm;
     EnTeteBMP enTete;
@@ -39,13 +41,13 @@ int bleuitImageBMP (char nomFichEntree[], char nomFichTransf[])
 
     for( row = 0; row < enTete.hauteurImage; ++row)
     {
-        for (col = 0; col < enTete.largeurImage; ++col)
-        {
-            pix = getPixel(row, col, ptIm, enTete);
-            pix.vert = 0;
-            pix.rouge = 0;
-            setPixel(row, col, pix,ptIm, enTete);
-        }
+	for (col = 0; col < enTete.largeurImage; ++col)
+	{
+	    pix = getPixel(row, col, ptIm, enTete);
+	    pix.vert = 0;
+	    pix.rouge = 0;
+	    setPixel(row, col, pix,ptIm, enTete);
+	}
     }
 
     sauveImageSurDisque(ptEnt,ptIm,nomFichTransf,enTete);
@@ -57,110 +59,106 @@ int bleuitImageBMP (char nomFichEntree[], char nomFichTransf[])
 
 
 /*!******************************************************************************************************
-*  \fn   chargeImageEnMemoire ( char *nomDeFichierBMP, char **ptEntete, char **ptImage, EnTeteBMP *enTete)
-*  \brief  charge en mémoire une image BMP en séparant l'en-tête de la zone bit map. L'allocation des deux
-*          emplacements mémoire est faite par deux malloc
-*          Effectue au préalable
-*          une lecture de l'en-tête grâce à la fonction litEnTete et retourne l'en-tête lue en paramètre résultat
-*  \param [in]  nomDeFichierBMP   le fichier bmp à charger en mémoire. Aucune vérification du type n'est faite
-*  \param [out ] ptEntete  retourne un pointeur sur la zone mémoire contenant une copie de l'image disque de l'en-tête
-*  \param [out ] ptImage   retourne un pointeur sur la zone mémoire contenant une copie de l'image disque de la zone bit map
+ *  \fn   chargeImageEnMemoire ( char *nomDeFichierBMP, char **ptEntete, char **ptImage, EnTeteBMP *enTete)
+ *  \brief  charge en mémoire une image BMP en séparant l'en-tête de la zone bit map. L'allocation des deux
+ *          emplacements mémoire est faite par deux malloc
+ *          Effectue au préalable
+ *          une lecture de l'en-tête grâce à la fonction litEnTete et retourne l'en-tête lue en paramètre résultat
+ *  \param [in]  nomDeFichierBMP   le fichier bmp à charger en mémoire. Aucune vérification du type n'est faite
+ *  \param [out ] ptEntete  retourne un pointeur sur la zone mémoire contenant une copie de l'image disque de l'en-tête
+ *  \param [out ] ptImage   retourne un pointeur sur la zone mémoire contenant une copie de l'image disque de la zone bit map
 
-*  \return  retourne OK  ou ERREUR si l'ouverture du fichier pose probleme
-**************************************************************************************************************/
+ *  \return  retourne OK  ou ERREUR si l'ouverture du fichier pose probleme
+ **************************************************************************************************************/
 int chargeImageEnMemoire ( char *nomDeFichierBMP, char **ptEnTete, char **ptImage, EnTeteBMP *enTeteBMP)
 {
-     FILE *f;
-     if (litEnteteBMP (nomDeFichierBMP,enTeteBMP) == ERREUR)
-        return ERREUR;
+    FILE *f;
+    if (litEnteteBMP (nomDeFichierBMP,enTeteBMP) == ERREUR)
+	return ERREUR;
 
-     f=fopen(nomDeFichierBMP,"rb");  
+    f=fopen(nomDeFichierBMP,"rb");  
 
-     *ptEnTete = malloc(enTeteBMP->tailleEntete+14);
-     *ptImage = malloc(enTeteBMP->tailleImage);
-    
-     fread(*ptEnTete,enTeteBMP->tailleEntete+14, 1, f); 
-     fread(*ptImage,enTeteBMP->tailleImage, 1, f); 
+    *ptEnTete = malloc(enTeteBMP->tailleEntete+14);
+    *ptImage = malloc(enTeteBMP->tailleImage);
 
-     return OK;
+    fread(*ptEnTete,enTeteBMP->tailleEntete+14, 1, f); 
+    fread(*ptImage,enTeteBMP->tailleImage, 1, f); 
+    fclose(f);
+
+    return OK;
 }
 
 /*!******************************************************************************************************
-*  \fn   getPixel(int  ligne, int colonne, char * ptImageBitMap,EnTeteBMP enTete )
-*  \brief   Fonction retournant une structure contenant les intensités de bleu vert et rouge d'un pixel
-*           repéré par sa ligne et sa colonne
-*           (0,0) est le coin inférieur gauche.
-*           Pour simplifier, aucune vérification de non dépassement des dimensions de l'image n'est faite.
-*            A l'utilisateur d'être prudent!
-*  \param [in] ligne   numéro de ligne à partir du bas de l'image. la numérotation des lignes commence à 0
-*  \param [in] colonne  numéro de colonne à partir de la gauche de l'image. la numérotation des colonnes commence à 0
-*  \param [in ] ptImageBitMap  pointeur sur la zone bit map en mémoire
-*  \param [in ] enTete structure de type EnTeteBMP pour avoir accès à la géométrie de l'image
-* \return une structure de type Pixel_T contenant les intensités de B V R du pixel
-**************************************************************************************************************/
+ *  \fn   getPixel(int  ligne, int colonne, char * ptImageBitMap,EnTeteBMP enTete )
+ *  \brief   Fonction retournant une structure contenant les intensités de bleu vert et rouge d'un pixel
+ *           repéré par sa ligne et sa colonne
+ *           (0,0) est le coin inférieur gauche.
+ *           Pour simplifier, aucune vérification de non dépassement des dimensions de l'image n'est faite.
+ *            A l'utilisateur d'être prudent!
+ *  \param [in] ligne   numéro de ligne à partir du bas de l'image. la numérotation des lignes commence à 0
+ *  \param [in] colonne  numéro de colonne à partir de la gauche de l'image. la numérotation des colonnes commence à 0
+ *  \param [in ] ptImageBitMap  pointeur sur la zone bit map en mémoire
+ *  \param [in ] enTete structure de type EnTeteBMP pour avoir accès à la géométrie de l'image
+ * \return une structure de type Pixel_T contenant les intensités de B V R du pixel
+ **************************************************************************************************************/
 Pixel_T getPixel(int  ligne, int colonne, char * ptImageBitMap,EnTeteBMP enTete )
 {
     Pixel_T pix;
     int padding = enTete.largeurImage % 4;
     int offset = ligne * (enTete.largeurImage * 3 + padding) + colonne * 3;
 
-
-   //handle offset to get the 3 differents values
+    //handle offset to get the 3 differents values
     pix.bleu = *(ptImageBitMap + offset);
     pix.vert = *(ptImageBitMap + offset + 1);
     pix.rouge = *(ptImageBitMap + offset + 2);
-
-
-
     return pix;
 
 }
 
 /*!******************************************************************************************************
-*  \fn   setPixel(int ligne, int colonne, Pixel_T intensitesPix, char *ptImageBitMap, EnTeteBMP enTete)
-*  \brief   Fonction permettant de positionner un pixel repéré par sa ligne et sa colonne avec  des intensités
-*           de bleu vert et rouge d'un pixel
-*           (0,0) est le coin inférieur gauche.
-*           Pour simplifier, aucune vérification de non dépassement des dimensions de l'image n'est faite.
-*            A l'utilisateur d'être prudent!
-*  \param [in] ligne   numéro de ligne à partir du bas de l'image. la numérotation des lignes commence à 0
-*  \param [in] colonne  numéro de colonne à partir de la gauche de l'image. la numérotation des colonnes commence à 0
-*  \param [in] intensitesPix  une structure de type Pixel_T contenant les intensités à placer de BVR à placer dans le pixel
-*  \param [in ] ptImageBitMap  pointeur sur la zone bit map en mémoire
-*  \param [in ] enTete structure de type EnTeteBMP pour avoir accès à la géométrie de l'image
-*  \return  rien  car on suppose pour simplifier que le pixel sera forcément dans l'image.  Vous pourrez à la fin sécuriser un peu cette fonction
-**************************************************************************************************************/
+ *  \fn   setPixel(int ligne, int colonne, Pixel_T intensitesPix, char *ptImageBitMap, EnTeteBMP enTete)
+ *  \brief   Fonction permettant de positionner un pixel repéré par sa ligne et sa colonne avec  des intensités
+ *           de bleu vert et rouge d'un pixel
+ *           (0,0) est le coin inférieur gauche.
+ *           Pour simplifier, aucune vérification de non dépassement des dimensions de l'image n'est faite.
+ *            A l'utilisateur d'être prudent!
+ *  \param [in] ligne   numéro de ligne à partir du bas de l'image. la numérotation des lignes commence à 0
+ *  \param [in] colonne  numéro de colonne à partir de la gauche de l'image. la numérotation des colonnes commence à 0
+ *  \param [in] intensitesPix  une structure de type Pixel_T contenant les intensités à placer de BVR à placer dans le pixel
+ *  \param [in ] ptImageBitMap  pointeur sur la zone bit map en mémoire
+ *  \param [in ] enTete structure de type EnTeteBMP pour avoir accès à la géométrie de l'image
+ *  \return  rien  car on suppose pour simplifier que le pixel sera forcément dans l'image.  Vous pourrez à la fin sécuriser un peu cette fonction
+ **************************************************************************************************************/
 void setPixel(int ligne, int colonne, Pixel_T intensitesPix, char *ptImageBitMap, EnTeteBMP enTete)
 {
     int padding = enTete.largeurImage % 4;
     int offset = ligne *( enTete.largeurImage *3 + padding ) + colonne *3;
 
-    *(ptImageBitMap + offset ) = intensitesPix.bleu;
-    *(ptImageBitMap + offset+1 ) = intensitesPix.vert;
-    *(ptImageBitMap + offset+2 ) = intensitesPix.rouge;
+    *(ptImageBitMap + offset) = intensitesPix.bleu;
+    *(ptImageBitMap + offset + 1) = intensitesPix.vert;
+    *(ptImageBitMap + offset + 2) = intensitesPix.rouge;
 
 }
 /*!*****************************************************************************************************************
-*  \fn   void sauveImageSurDisque(char *ptEnTete, char *ptImage,char *nomFichSauv,EnTeteBMP enTete )
-*  \brief  sauve sur disque l'image en mémoire ayant été chargée au préalable par la fonction chargeImageEnMemoire
-*
-*  \param [in ] ptEntete  pointeur sur la zone mémoire contenant l'en-tête  du fichier tel qu'il doit être écrit sur le disque
-*  \param [in] ptImage    pointeur sur la zone mémoire contenant la zone bit map de l'image
-*  \param [in]  nomDeFichierSauv   chaine de caractères contenant le nom du fichier bmp où sera sauvegardée l'image .
-*  \param [in ] enTeteBMP   une structure de type EnTeteBMP pour documenter l'image en mémoire
-*  \return  retourne OK  ou ERREUR si l'ouverture du fichier pose probleme
-********************************************************************************************************************/
+ *  \fn   void sauveImageSurDisque(char *ptEnTete, char *ptImage,char *nomFichSauv,EnTeteBMP enTete )
+ *  \brief  sauve sur disque l'image en mémoire ayant été chargée au préalable par la fonction chargeImageEnMemoire
+ *
+ *  \param [in ] ptEntete  pointeur sur la zone mémoire contenant l'en-tête  du fichier tel qu'il doit être écrit sur le disque
+ *  \param [in] ptImage    pointeur sur la zone mémoire contenant la zone bit map de l'image
+ *  \param [in]  nomDeFichierSauv   chaine de caractères contenant le nom du fichier bmp où sera sauvegardée l'image .
+ *  \param [in ] enTeteBMP   une structure de type EnTeteBMP pour documenter l'image en mémoire
+ *  \return  retourne OK  ou ERREUR si l'ouverture du fichier pose probleme
+ ********************************************************************************************************************/
 void sauveImageSurDisque(char *ptEnTete, char *ptImage,char *nomFichSauv,EnTeteBMP enTete )
 {
-    
-     FILE *fichSauv;
-     if((fichSauv = fopen(nomFichSauv,"wb"))== NULL)
-             return;
 
-     fwrite(ptEnTete, enTete.tailleEntete+14,1,fichSauv);
-     fwrite(ptImage, enTete.tailleImage,1,fichSauv);
-     fclose(fichSauv);
+    FILE *fichSauv;
+    if((fichSauv = fopen(nomFichSauv,"wb"))== NULL)
+	return;
 
+    fwrite(ptEnTete, enTete.tailleEntete+14,1,fichSauv);
+    fwrite(ptImage, enTete.tailleImage,1,fichSauv);
+    fclose(fichSauv);
 }
 
 void rectangleRouge(int x, int y, int largCar,int hautCar,char *nomFichEntree,char *nomFichAvecCarre)
@@ -173,8 +171,8 @@ void rectangleRouge(int x, int y, int largCar,int hautCar,char *nomFichEntree,ch
     chargeImageEnMemoire(nomFichEntree, &ptEnt, &ptIm, &enTete);
 
     for (col = y; col < hautCar; ++col)
-        for (lig = x; lig < largCar; ++lig)
-            setPixel(lig, col, pix,ptIm, enTete);
+	for (lig = x; lig < largCar; ++lig)
+	    setPixel(lig, col, pix,ptIm, enTete);
 
     sauveImageSurDisque(ptEnt,ptIm,nomFichAvecCarre,enTete);
     free(ptEnt);
@@ -182,17 +180,61 @@ void rectangleRouge(int x, int y, int largCar,int hautCar,char *nomFichEntree,ch
 }
 
 
-void rotate90Degrees(char *ptEnTete, char *ptImage, EnTeteBMP enTete)
+void rotate90Degrees(char *inputFile, char* outputFile)
 {
-    //Handle header
-    int tmp;
-    tmp = enTete.largeurImage;
-    enTete.largeurImage = enTete.hauteurImage;
-    enTete.hauteurImage = tmp;
-    enTete.tailleImage = 54;
-        //Taille entete + calcul savant
+    EnTeteBMP enTete, newEnTete;
+    char *ptEnt, *ptIm,  *ptNewIm;
+    int padding, tmp,i, col, row;
 
+    Pixel_T pix;
 
-    //?
+    chargeImageEnMemoire(inputFile, &ptEnt, &ptIm, &enTete);
+    newEnTete = enTete;
 
+    tmp = newEnTete.largeurImage;
+    newEnTete.largeurImage = newEnTete.hauteurImage;  
+    newEnTete.hauteurImage = tmp;
+
+    padding = newEnTete.largeurImage % 4;
+    printf("paddind is %d\n", padding);
+
+    newEnTete.tailleImage = (newEnTete.largeurImage * 3 + padding) * newEnTete.hauteurImage;
+    newEnTete.tailleFichier =  54 + newEnTete.tailleImage;
+
+    //Copy an integer into the byte
+    convertissor.integer = newEnTete.hauteurImage;
+    for(i = 3; i >= 0; i--)
+	*(ptEnt + OFFSET_HAUTEUR_IMAGE +i) = convertissor.byte[i];
+
+    convertissor.integer = newEnTete.largeurImage;
+    for(i = 3; i >= 0; i--)
+	*(ptEnt + OFFSET_LARGEUR_IMAGE +i) = convertissor.byte[i];
+
+    convertissor.integer = newEnTete.tailleImage;
+    for(i = 3; i >= 0; i--)
+	*(ptEnt + OFFSET_TAILLE_IMAGE +i) = convertissor.byte[i];
+
+    convertissor.integer = newEnTete.tailleFichier;
+    for(i = 3; i >= 0; i--)
+	*(ptEnt + OFFSET_TAILLE_FICHIER +i) = convertissor.byte[i];
+
+    ptNewIm =  (char*) malloc(newEnTete.tailleImage);
+
+    //Rotate pixels
+    for (row = 0; row < newEnTete.hauteurImage; ++row)
+    {
+	for (col = 0; col < newEnTete.largeurImage; ++col)
+	{
+	    pix = getPixel(col, row,  ptIm, enTete);
+	    setPixel(newEnTete.hauteurImage -  row, col, pix, ptNewIm, newEnTete);
+	}
+	for(i = 0; i < padding; ++i)
+	    *(ptNewIm + row * newEnTete.largeurImage + col +i) = '0';
+    }
+
+    //Free & save
+    free(ptIm);
+    sauveImageSurDisque( ptEnt,ptNewIm,outputFile, newEnTete);
+    free(ptNewIm);
+    free(ptEnt);
 }
