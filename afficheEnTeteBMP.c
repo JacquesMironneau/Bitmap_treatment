@@ -22,8 +22,8 @@
 /***********************************************/
 /************ prototype des fonctions  *********/
 /***********************************************/
-int extern litEnteteBMP (char nomDeFichierBMP[], EnTeteBMP *enTete);
-void extern afficheEnTeteBMP (EnTeteBMP enTete);
+extern int litEnteteBMP (char nomDeFichierBMP[], EnTeteBMP *enTete);
+extern void afficheEnTeteBMP (EnTeteBMP enTete);
 
 /******************************************/
 /************ fonction principale  ********/
@@ -31,7 +31,9 @@ void extern afficheEnTeteBMP (EnTeteBMP enTete);
 int main(void)
 {
   EnTeteBMP enTeteFich;
-  litEnteteBMP ("../casimir.bmp", &enTeteFich);
+  litEnteteBMP (NOM_FICHIER, &enTeteFich);
   afficheEnTeteBMP(enTeteFich);
+
+  return EXIT_SUCCESS;
 }
 

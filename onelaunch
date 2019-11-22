@@ -3,7 +3,7 @@
 make
 transforme
 #rm -f ./transforme
-shotwell 902.bmp
+#shotwell 902.bmp
 shotwell avion90.bmp
 
 

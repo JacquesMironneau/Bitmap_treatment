@@ -13,6 +13,8 @@
 #include <stdio.h>
 #include "enTeteBMP.h"
 #include "transforme.h"
+#define FILE_HEADER_SIZE 14
+#define HEADER_SIZE 54
 
 union 
 {
@@ -31,7 +33,6 @@ union
  **************************************************************************************************************/
 int bleuitImageBMP (char nomFichEntree[], char nomFichTransf[])
 {
-    FILE *fichBleu;
     char *ptEnt, *ptIm;
     EnTeteBMP enTete;
 
@@ -49,11 +50,11 @@ int bleuitImageBMP (char nomFichEntree[], char nomFichTransf[])
 	    setPixel(row, col, pix,ptIm, enTete);
 	}
     }
-
     sauveImageSurDisque(ptEnt,ptIm,nomFichTransf,enTete);
-
     free(ptEnt);
     free(ptIm);
+
+    return OK;
 
 }
 
@@ -78,10 +79,10 @@ int chargeImageEnMemoire ( char *nomDeFichierBMP, char **ptEnTete, char **ptImag
 
     f=fopen(nomDeFichierBMP,"rb");  
 
-    *ptEnTete = malloc(enTeteBMP->tailleEntete+14);
+    *ptEnTete = malloc(enTeteBMP->tailleEntete + FILE_HEADER_SIZE);
     *ptImage = malloc(enTeteBMP->tailleImage);
 
-    fread(*ptEnTete,enTeteBMP->tailleEntete+14, 1, f); 
+    fread(*ptEnTete,enTeteBMP->tailleEntete + FILE_HEADER_SIZE, 1, f); 
     fread(*ptImage,enTeteBMP->tailleImage, 1, f); 
     fclose(f);
 
@@ -107,7 +108,7 @@ Pixel_T getPixel(int  ligne, int colonne, char * ptImageBitMap,EnTeteBMP enTete 
     int padding = enTete.largeurImage % 4;
     int offset = ligne * (enTete.largeurImage * 3 + padding) + colonne * 3;
 
-    //handle offset to get the 3 differents values
+    /*handle offset to get the 3 differents values*/
     pix.bleu = *(ptImageBitMap + offset);
     pix.vert = *(ptImageBitMap + offset + 1);
     pix.rouge = *(ptImageBitMap + offset + 2);
@@ -156,7 +157,7 @@ void sauveImageSurDisque(char *ptEnTete, char *ptImage,char *nomFichSauv,EnTeteB
     if((fichSauv = fopen(nomFichSauv,"wb"))== NULL)
 	return;
 
-    fwrite(ptEnTete, enTete.tailleEntete+14,1,fichSauv);
+    fwrite(ptEnTete, enTete.tailleEntete + FILE_HEADER_SIZE,1,fichSauv);
     fwrite(ptImage, enTete.tailleImage,1,fichSauv);
     fclose(fichSauv);
 }
@@ -165,7 +166,7 @@ void rectangleRouge(int x, int y, int largCar,int hautCar,char *nomFichEntree,ch
 {
     EnTeteBMP enTete;
     int lig,col;
-    char *ptEnt, *ptIm,*pt;
+    char *ptEnt, *ptIm;
     Pixel_T pix = {0, 0, 127};
 
     chargeImageEnMemoire(nomFichEntree, &ptEnt, &ptIm, &enTete);
@@ -184,57 +185,56 @@ void rotate90Degrees(char *inputFile, char* outputFile)
 {
     EnTeteBMP enTete, newEnTete;
     char *ptEnt, *ptIm,  *ptNewIm;
-    int padding, tmp,i, col, row;
+    int padding,i, col, row;
 
     Pixel_T pix;
 
-    chargeImageEnMemoire(inputFile, &ptEnt, &ptIm, &enTete);
-    newEnTete = enTete;
-
-    tmp = newEnTete.largeurImage;
-    newEnTete.largeurImage = newEnTete.hauteurImage;  
-    newEnTete.hauteurImage = tmp;
-
-    padding = newEnTete.largeurImage % 4;
-    printf("paddind is %d\n", padding);
-
-    newEnTete.tailleImage = (newEnTete.largeurImage * 3 + padding) * newEnTete.hauteurImage;
-    newEnTete.tailleFichier =  54 + newEnTete.tailleImage;
-
-    //Copy an integer into the byte
-    convertissor.integer = newEnTete.hauteurImage;
-    for(i = 3; i >= 0; i--)
-	*(ptEnt + OFFSET_HAUTEUR_IMAGE +i) = convertissor.byte[i];
-
-    convertissor.integer = newEnTete.largeurImage;
-    for(i = 3; i >= 0; i--)
-	*(ptEnt + OFFSET_LARGEUR_IMAGE +i) = convertissor.byte[i];
-
-    convertissor.integer = newEnTete.tailleImage;
-    for(i = 3; i >= 0; i--)
-	*(ptEnt + OFFSET_TAILLE_IMAGE +i) = convertissor.byte[i];
-
-    convertissor.integer = newEnTete.tailleFichier;
-    for(i = 3; i >= 0; i--)
-	*(ptEnt + OFFSET_TAILLE_FICHIER +i) = convertissor.byte[i];
-
-    ptNewIm =  (char*) malloc(newEnTete.tailleImage);
-
-    //Rotate pixels
-    for (row = 0; row < newEnTete.hauteurImage; ++row)
+    if(chargeImageEnMemoire(inputFile, &ptEnt, &ptIm, &enTete) == OK)
     {
-	for (col = 0; col < newEnTete.largeurImage; ++col)
-	{
-	    pix = getPixel(col, row,  ptIm, enTete);
-	    setPixel(newEnTete.hauteurImage -  row, col, pix, ptNewIm, newEnTete);
-	}
-	for(i = 0; i < padding; ++i)
-	    *(ptNewIm + row * newEnTete.largeurImage + col +i) = '0';
-    }
+	newEnTete = enTete;
 
-    //Free & save
-    free(ptIm);
-    sauveImageSurDisque( ptEnt,ptNewIm,outputFile, newEnTete);
-    free(ptNewIm);
-    free(ptEnt);
+	newEnTete.largeurImage = enTete.hauteurImage;  
+	newEnTete.hauteurImage =  enTete.largeurImage; 
+
+	padding = newEnTete.largeurImage % 4;
+
+	newEnTete.tailleImage = (newEnTete.largeurImage * 3 + padding) * newEnTete.hauteurImage;
+	newEnTete.tailleFichier = HEADER_SIZE + newEnTete.tailleImage;
+
+	/*Copy an integer into the byte*/
+	convertissor.integer = newEnTete.hauteurImage;
+	for(i = 3; i >= 0; i--)
+	    *(ptEnt + OFFSET_HAUTEUR_IMAGE +i) = convertissor.byte[i];
+
+	convertissor.integer = newEnTete.largeurImage;
+	for(i = 3; i >= 0; i--)
+	    *(ptEnt + OFFSET_LARGEUR_IMAGE +i) = convertissor.byte[i];
+
+	convertissor.integer = newEnTete.tailleImage;
+	for(i = 3; i >= 0; i--)
+	    *(ptEnt + OFFSET_TAILLE_IMAGE +i) = convertissor.byte[i];
+
+	convertissor.integer = newEnTete.tailleFichier;
+	for(i = 3; i >= 0; i--)
+	    *(ptEnt + OFFSET_TAILLE_FICHIER +i) = convertissor.byte[i];
+
+	ptNewIm =  (char*) malloc(newEnTete.tailleImage);
+
+	/*Rotate pixels*/
+	for (row = 0; row < newEnTete.hauteurImage; ++row)
+	{
+	    for (col = 0; col < newEnTete.largeurImage; ++col)
+	    {
+		pix = getPixel(col, row,  ptIm, enTete);
+		setPixel(newEnTete.hauteurImage -  row, col, pix, ptNewIm, newEnTete);
+	    }
+	    for(i = 0; i < padding; ++i)
+		*(ptNewIm + row * newEnTete.largeurImage + col +i) = '0';
+	}
+
+	free(ptIm);
+	sauveImageSurDisque( ptEnt,ptNewIm,outputFile, newEnTete);
+	free(ptNewIm);
+	free(ptEnt);
+    }
 }
